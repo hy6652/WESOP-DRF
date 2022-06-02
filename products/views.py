@@ -1,15 +1,17 @@
 import json
 
 from rest_framework import generics
+from rest_framework import filters
 
-from django.http      import JsonResponse
-from django.views     import View
-from django.http      import JsonResponse
-from django.db.models import Q
+from django.http                   import JsonResponse
+from django.views                  import View
+from django.http                   import JsonResponse
+from django.db.models              import Q
 
 from cores.utils          import author
 from products.serializers import ProductSerializer
 from products.models      import Category, Product, Ingredient, SkinType, ProductFeelings, Review
+
 
 class RecommendedView(View):
     def get(self, request, product_id):
@@ -29,62 +31,70 @@ class RecommendedView(View):
         except Product.DoesNotExist:
             return JsonResponse({'message' : 'PRODUCT_DOES_EXIST'} , status = 401)
 
-class ProductListView(View):
-    def get(self, request):
-        category_id   = request.GET.get('category_id', None)
-        offset        = int(request.GET.get('offset', 0))
-        limit         = int(request.GET.get('limit', 100))
-        ingredient_id = request.GET.getlist('ingredient_id', None)
-        skintype_id   = request.GET.getlist('skintype_id', None)
-        scent         = request.GET.get('scent', None)
-        feeling_id    = request.GET.get('feeling_id', None)
-        search        = request.GET.get('search', None)
+
+# class ProductListView(View):
+#     def get(self, request):
+#         category_id   = request.GET.get('category_id', None)
+#         offset        = int(request.GET.get('offset', 0))
+#         limit         = int(request.GET.get('limit', 100))
+#         ingredient_id = request.GET.getlist('ingredient_id', None)
+#         skintype_id   = request.GET.getlist('skintype_id', None)
+#         scent         = request.GET.get('scent', None)
+#         feeling_id    = request.GET.get('feeling_id', None)
+#         search        = request.GET.get('search', None)
         
-        q = Q()
+#         q = Q()
 
-        if search:
-            q &= Q(name__icontains=search)
+#         if search:
+#             q &= Q(name__icontains=search)
 
-        if category_id:
-            q &= Q(category__id=category_id)
+#         if category_id:
+#             q &= Q(category__id=category_id)
 
-        if scent:
-            q &= Q(howtouse__scent__contains=scent)
+#         if scent:
+#             q &= Q(howtouse__scent__contains=scent)
         
-        if ingredient_id:
-            q &= Q(productingredient__ingredient__id__in=ingredient_id)
+#         if ingredient_id:
+#             q &= Q(productingredient__ingredient__id__in=ingredient_id)
         
-        if skintype_id:
-            q &= Q(productskintype__skin_type__id__in=skintype_id)
+#         if skintype_id:
+#             q &= Q(productskintype__skin_type__id__in=skintype_id)
         
-        if feeling_id:
-            q &= Q(productfeelings__feeling__id__in=feeling_id)
+#         if feeling_id:
+#             q &= Q(productfeelings__feeling__id__in=feeling_id)
 
-        products = Product.objects.filter(q)[offset:offset+limit]
+#         products = Product.objects.filter(q)[offset:offset+limit]
 
-        result = [{
-            'id'         : product.id,
-            'badge'      : product.badge,
-            'productName': product.name,
-            'size'       : product.size,
-            'price'      : product.price,
-            'feeling'    : [feeling.feeling.name for feeling in product.productfeelings_set.all()],
-            'ingredient' : [item.ingredient.name for item in product.productingredient_set.all()],
-            'skin_type'  : [productskintype.skin_type.name for productskintype in product.productskintype_set.all()],
-            'url'        : [img.url for img in product.productimage_set.all()],
-            'howtouse'   : product.howtouse,
-            'category'   : {
-                'categoryId'            : product.category.id,
-                'categoryName'          : product.category.category_name,
-                'categoryDescription'   : product.category.main_description,
-                'categorySubDescription': product.category.sub_description
-            }
-        } for product in products]
-        return JsonResponse({'result':result}, status=200)
+#         result = [{
+#             'id'         : product.id,
+#             'badge'      : product.badge,
+#             'productName': product.name,
+#             'size'       : product.size,
+#             'price'      : product.price,
+#             'feeling'    : [feeling.feeling.name for feeling in product.productfeelings_set.all()],
+#             'ingredient' : [item.ingredient.name for item in product.productingredient_set.all()],
+#             'skin_type'  : [productskintype.skin_type.name for productskintype in product.productskintype_set.all()],
+#             'url'        : [img.url for img in product.productimage_set.all()],
+#             'howtouse'   : product.howtouse,
+#             'category'   : {
+#                 'categoryId'            : product.category.id,
+#                 'categoryName'          : product.category.category_name,
+#                 'categoryDescription'   : product.category.main_description,
+#                 'categorySubDescription': product.category.sub_description
+#             }
+#         } for product in products]
+#         return JsonResponse({'result':result}, status=200)
+
+
+class ProductListGV(generics.ListAPIView):
+    queryset         = Product.objects.all()
+    serializer_class = ProductSerializer
+    filter_backends  = [filters.SearchFilter]
+    search_fields    = ['^name', '=category__id', '^skin_type__name', 'feeling__name', '^ingredient__name']
 
 
 class ProductDetailGV(generics.RetrieveAPIView):
-    queryset = Product.objects.all()
+    queryset         = Product.objects.all()
     serializer_class = ProductSerializer
 
 
