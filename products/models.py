@@ -1,7 +1,7 @@
 from itertools import product
 from django.db import models
 
-from users.models import User
+from users.models    import User
 from cores.timestamp import TimeStamp
 
 # Create your models here.
@@ -12,9 +12,10 @@ class Product(TimeStamp):
     description = models.TextField(max_length=1000)
     category    = models.ForeignKey('Category', on_delete=models.CASCADE)
     howtouse    = models.JSONField()
-    feelings    = models.ManyToManyField('Feeling', through="ProductFeelings")
+    feeling     = models.ManyToManyField('Feeling', through="ProductFeelings")
     badge       = models.CharField(max_length=15, null=True)
-    skin_types  = models.ManyToManyField('SkinType', through='ProductSkintype')
+    skin_type   = models.ManyToManyField('SkinType', through='ProductSkintype')
+    ingredient  = models.ManyToManyField('Ingredient', through='ProductIngredient')
     
     class Meta:
         db_table = 'products'

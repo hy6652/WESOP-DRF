@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'products',
     'carts',
     'rest_framework',
+    'django_filters',
 
 ]
 
@@ -180,4 +181,9 @@ LOGGING = {
             'propagate': False,
         },
     },
+}
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
