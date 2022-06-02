@@ -9,8 +9,32 @@ from django.http                   import JsonResponse
 from django.db.models              import Q
 
 from cores.utils          import author
-from products.serializers import ProductSerializer
+from products.pagination  import CategoryLimitOffsetPagination
+from products.serializers import ProductSerializer, CategorySerializer
 from products.models      import Category, Product, Ingredient, SkinType, ProductFeelings, Review
+
+
+class ProductListGV(generics.ListAPIView):
+    queryset         = Product.objects.all()
+    serializer_class = ProductSerializer
+    filter_backends  = [filters.SearchFilter]
+    search_fields    = ['^name', '=category__id', '^skin_type__name', 'feeling__name', '^ingredient__name']
+
+
+class ProductDetailGV(generics.RetrieveAPIView):
+    queryset         = Product.objects.all()
+    serializer_class = ProductSerializer
+
+
+class CategoryListGV(generics.ListAPIView):
+    queryset         = Category.objects.all()
+    serializer_class = CategorySerializer
+    pagination_class = CategoryLimitOffsetPagination
+
+
+class CategoryDetailGV(generics.RetrieveAPIView):
+    queryset         = Category.objects.all()
+    serializer_class = CategorySerializer
 
 
 class RecommendedView(View):
@@ -18,7 +42,7 @@ class RecommendedView(View):
         try:
             category_id   = Product.objects.get(id = product_id).category
             products      = Product.objects.filter(category = category_id).exclude(id=product_id)
-            
+
             recommend_list = [{
                 'name'      : product.name,
                 'image'     : [image.url for image in product.productimage_set.all()],
@@ -86,18 +110,6 @@ class RecommendedView(View):
 #         return JsonResponse({'result':result}, status=200)
 
 
-class ProductListGV(generics.ListAPIView):
-    queryset         = Product.objects.all()
-    serializer_class = ProductSerializer
-    filter_backends  = [filters.SearchFilter]
-    search_fields    = ['^name', '=category__id', '^skin_type__name', 'feeling__name', '^ingredient__name']
-
-
-class ProductDetailGV(generics.RetrieveAPIView):
-    queryset         = Product.objects.all()
-    serializer_class = ProductSerializer
-
-
 # class ProductDetailView(View):
 #     def get(self, request, product_id):
 #         try: 
@@ -127,35 +139,38 @@ class ProductDetailGV(generics.RetrieveAPIView):
 #             return JsonResponse({'message' : 'PRODUCT_NAME_ERROR'} , status = 404)
 
 
-class CategoryListView(View):
-    def get(self, request):
-        offset = int(request.GET.get('offset', 0))
-        limit  = int(request.GET.get('limit', 100))
+# class CategoryListView(View):
+#     def get(self, request):
+#         offset = int(request.GET.get('offset', 0))
+#         limit  = int(request.GET.get('limit', 100))
 
-        categories = Category.objects.all()[offset:offset+limit]
+#         categories = Category.objects.all()[offset:offset+limit]
         
-        result = [{
-            'categoryId'            : category.id,
-            'categoryName'          : category.category_name,
-            'categoryDescription'   : category.main_description,
-            'categorySubDescription': category.sub_description
-        } for category in categories]
+#         result = [{
+#             'categoryId'            : category.id,
+#             'categoryName'          : category.category_name,
+#             'categoryDescription'   : category.main_description,
+#             'categorySubDescription': category.sub_description
+#         } for category in categories]
 
-        return JsonResponse({'result':result}, status=200)
+#         return JsonResponse({'result':result}, status=200)
 
 
-class CategoryDetailView(View):
-    def get(self, request, category_id):        
-        category = Category.objects.get(id=category_id)
+
+
+# class CategoryDetailView(View):
+#     def get(self, request, category_id):        
+#         category = Category.objects.get(id=category_id)
         
-        result = {
-            'categoryId'            : category.id,
-            'categoryName'          : category.category_name,
-            'categoryDescription'   : category.main_description,
-            'categorySubDescription': category.sub_description
-        }
+#         result = {
+#             'categoryId'            : category.id,
+#             'categoryName'          : category.category_name,
+#             'categoryDescription'   : category.main_description,
+#             'categorySubDescription': category.sub_description
+#         }
 
-        return JsonResponse({'result':result}, status=200)
+#         return JsonResponse({'result':result}, status=200)
+
     
 class ProductReviewView(View):
     def get(self, request):
