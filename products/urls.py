@@ -1,6 +1,8 @@
 from  django.urls import path
+
 from products.views import (RecommendedView, CategoryListGV, CategoryDetailGV,
-                            ProductReviewView, ProductDetailGV, ProductListGV)
+                            ProductDetailGV, ProductListGV,
+                            ReviewListGV, ReviewCreateGV, ReviewDetailGV)
 
 urlpatterns = [
     # path('/categories', CategoryListView.as_view()),
@@ -12,6 +14,10 @@ urlpatterns = [
     path('', ProductListGV.as_view()),
     path('/<int:pk>' , ProductDetailGV.as_view(), name='product-detail'),
 
-    path('/review' , ProductReviewView.as_view()),
-    path('/review/<int:review_id>' , ProductReviewView.as_view())
+    path('/<int:pk>/reviews' , ReviewListGV.as_view()),
+    path('/review/<int:pk>' , ReviewDetailGV.as_view()),
+    path('/<int:pk>/review-create' , ReviewCreateGV.as_view()),
+
+    # path('/<int:product_id>/review' , ProductReviewView.as_view()),
+    # path('/review/<int:review_id>' , ProductReviewView.as_view())
 ]

@@ -1,16 +1,19 @@
 import json
+from django.forms import ValidationError
 
-from rest_framework import generics
-from rest_framework import filters
+from rest_framework             import generics
+from rest_framework             import filters
+from rest_framework.response    import Response
+from rest_framework.permissions import IsAuthenticated
 
-from django.http                   import JsonResponse
-from django.views                  import View
-from django.http                   import JsonResponse
-from django.db.models              import Q
+from django.http      import JsonResponse
+from django.views     import View
+from django.http      import JsonResponse
+# from django.db.models import Q
 
 from cores.utils          import author
 from products.pagination  import CategoryLimitOffsetPagination
-from products.serializers import ProductSerializer, CategorySerializer
+from products.serializers import ProductSerializer, CategorySerializer, ReviewSerializer
 from products.models      import Category, Product, Ingredient, SkinType, ProductFeelings, Review
 
 
@@ -171,56 +174,80 @@ class RecommendedView(View):
 
 #         return JsonResponse({'result':result}, status=200)
 
-    
-class ProductReviewView(View):
-    def get(self, request):
-        try:
-            data = json.loads(request.body)
-            reviews =Review.objects.filter(product_id = data['product_id'])
-            
-            if not reviews.exists():
-                return JsonResponse({'message' : 'PRODUCT_REVIEW_DOES_NOT_EXIST'} , status = 404)
-            
-            result = [{
-                    'review_id' : review.id,
-                    'user'      : review.user.email,
-                    'content'   : review.content
-                } for review in reviews]
-            return JsonResponse({'message' : result} , status =200)
-        except KeyError:
-            return JsonResponse({'message': 'KEY_ERROR'} , status = 400)
-        except Product.DoesNotExist:
-            return JsonResponse({'message' : 'PRODUCT_DOES_NOT_EXIST'} , status = 400)
-    
-    @author
-    def post(self, request):
-        try:
-            data = json.loads(request.body)
-            content     = data['content']
-            user        = request.user
-            product     = Product.objects.get(id = data['product_id'])
-            
-            Review.objects.create(  
-                user    = user,
-                product = product, 
-                content = content
-            )
-             
-            return JsonResponse({'message' : 'SUCCESS'} , status = 201) 
-        except KeyError:
-            return JsonResponse({'message': 'KEY_ERROR'} , status = 400)
-        except Product.DoesNotExist:
-            return JsonResponse({'message' : 'PRODUCT_DOES_NOT_EXIST'} , status = 404)
-    
-    @author
-    def delete(self, request, review_id):
-        review      = Review.objects.filter(user = request.user , id = review_id)
-            
-        if not review.exists():
-            return JsonResponse({'message' : 'UNAUTHORIZED_REQUEST'} , status = 404)
-        
-        review.delete()
-            
-        return JsonResponse({'message' : 'SUCCESS'} , status = 200)
+class ReviewListGV(generics.ListAPIView):
+    serializer_class = ReviewSerializer
 
-   
+    def get_queryset(self):
+        pk = self.kwargs.get('pk')
+        return Review.objects.filter(product=pk)
+
+
+class ReviewDetailGV(generics.RetrieveAPIView):
+    queryset         = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+ 
+class ReviewCreateGV(generics.CreateAPIView):
+    serializer_class   = ReviewSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        pk      = self.kwargs.get('pk')
+        user    = self.request.user
+        product = Product.objects.get(pk=pk)
+
+        if Review.objects.filter(product=product, user=user).exists():
+            raise ValidationError("your review for this product already exists")
+        serializer.save(product=product, user=user)
+
+
+# class ProductReviewView(View):
+#     def get(self, request, product_id):
+#         try:
+#             data = json.loads(request.body)
+#             reviews =Review.objects.filter(product_id = product_id)
+            
+#             if not reviews.exists():
+#                 return JsonResponse({'message' : 'PRODUCT_REVIEW_DOES_NOT_EXIST'} , status = 404)
+            
+#             result = [{
+#                     'review_id' : review.id,
+#                     'user'      : review.user.email,
+#                     'content'   : review.content
+#                 } for review in reviews]
+#             return JsonResponse({'message' : result} , status =200)
+#         except KeyError:
+#             return JsonResponse({'message': 'KEY_ERROR'} , status = 400)
+#         except Product.DoesNotExist:
+#             return JsonResponse({'message' : 'PRODUCT_DOES_NOT_EXIST'} , status = 400)
+    
+#     @author
+#     def post(self, request):
+#         try:
+#             data = json.loads(request.body)
+#             content     = data['content']
+#             user        = request.user
+#             product     = Product.objects.get(id = data['product_id'])
+            
+#             Review.objects.create(  
+#                 user    = user,
+#                 product = product, 
+#                 content = content
+#             )
+             
+#             return JsonResponse({'message' : 'SUCCESS'} , status = 201) 
+#         except KeyError:
+#             return JsonResponse({'message': 'KEY_ERROR'} , status = 400)
+#         except Product.DoesNotExist:
+#             return JsonResponse({'message' : 'PRODUCT_DOES_NOT_EXIST'} , status = 404)
+    
+#     @author
+#     def delete(self, request, review_id):
+#         review      = Review.objects.filter(user = request.user , id = review_id)
+            
+#         if not review.exists():
+#             return JsonResponse({'message' : 'UNAUTHORIZED_REQUEST'} , status = 404)
+        
+#         review.delete()
+            
+#         return JsonResponse({'message' : 'SUCCESS'} , status = 200)
