@@ -1,7 +1,7 @@
-from itertools import product
-from django.db import models
+from django.db                  import models
+from django.contrib.auth.models import User
 
-from users.models    import User
+# from users.models    import User
 from cores.timestamp import TimeStamp
 
 # Create your models here.
@@ -17,6 +17,9 @@ class Product(TimeStamp):
     skin_type   = models.ManyToManyField('SkinType', through='ProductSkintype')
     ingredient  = models.ManyToManyField('Ingredient', through='ProductIngredient')
     
+    def __str__(self):
+        return self.name
+        
     class Meta:
         db_table = 'products'
 

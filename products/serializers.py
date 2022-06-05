@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from products.models import (Category, Product, ProductFeelings,
-                            ProductIngredient, ProductSkintype)
+                            ProductIngredient, ProductSkintype, Review, ReviewImage)
 
 
 class ProductFeelingsSerializer(serializers.ModelSerializer):
@@ -42,4 +42,20 @@ class ProductSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model  = Category
+        fields = '__all__'
+
+
+class ReviewImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = ReviewImage
+        fields = '__all__'
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    user    = serializers.StringRelatedField(read_only=True)
+    product = serializers.StringRelatedField(read_only=True)
+    review  = ReviewImageSerializer(read_only=True)
+
+    class Meta:
+        model  = Review
         fields = '__all__'
