@@ -1,7 +1,7 @@
 from django.db import models
 
 from products.models import Product
-from users.models import User
+from users.models    import User
 from cores.timestamp import TimeStamp
 
 
