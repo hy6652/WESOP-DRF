@@ -17,16 +17,6 @@ class CartListGV(generics.ListAPIView):
     serializer_class = CartSerializer
 
 
-class CartCreateGV(generics.CreateAPIView):
-    serializer_class = CartSerializer
-
-    def perform_create(self, serializer):
-        pk      = self.kwargs.get('pk')
-        user    = self.request.user
-        product = Product.objects.get(pk=pk)
-    
-
-
 class CartView(View):
     @author
     def post(self, request):
