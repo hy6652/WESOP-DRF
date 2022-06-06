@@ -1,11 +1,30 @@
 import json
 
+from rest_framework import generics
 
 from django.http import JsonResponse
 from django.views import View
 
+from carts.serializers import CartSerializer
+
 from cores.utils import author
 from carts.models import Cart
+from products.models import Product
+
+
+class CartListGV(generics.ListAPIView):
+    queryset         = Cart.objects.all()
+    serializer_class = CartSerializer
+
+
+class CartCreateGV(generics.CreateAPIView):
+    serializer_class = CartSerializer
+
+    def perform_create(self, serializer):
+        pk      = self.kwargs.get('pk')
+        user    = self.request.user
+        product = Product.objects.get(pk=pk)
+    
 
 
 class CartView(View):
