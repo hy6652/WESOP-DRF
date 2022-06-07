@@ -1,13 +1,12 @@
 from  django.urls import path
 
-from products.views import (RecommendedView, CategoryListGV, CategoryDetailGV,
-                            ProductDetailGV, ProductListGV,
+from products.views import (CategoryListGV, CategoryDetailGV,ProductDetailGV, ProductListGV,
                             ReviewListGV, ReviewCreateGV, ReviewDetailGV)
 
 urlpatterns = [
     # path('/categories', CategoryListView.as_view()),
     # path('/categories/<int:category_id>', CategoryDetailView.as_view()),
-    path('/recommend/<int:product_id>' , RecommendedView.as_view()),
+    # path('/recommend/<int:product_id>' , RecommendedView.as_view()),
 
     path('/categories/<int:pk>', CategoryDetailGV.as_view()),
     path('/categories', CategoryListGV.as_view()),
