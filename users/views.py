@@ -1,5 +1,6 @@
-from rest_framework.decorators import api_view, APIView
-from rest_framework.response   import Response
+from rest_framework.decorators       import APIView
+from rest_framework.response         import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from users.serializers import RegistrationSerailzer
 
@@ -7,17 +8,18 @@ from users.serializers import RegistrationSerailzer
 class RegistrationAPIView(APIView):
     def post(self, request):
         serializer = RegistrationSerailzer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
-        
 
-# @api_view(['POST', ])
-# def registration_view(request):
-#     if request.method == 'POST':
-#         serializer = RegistrationSerailzer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=201)
-#         return Response(serializer.errors, status=400)
+        if serializer.is_valid():
+            user    = serializer.save()
+            refresh = RefreshToken.for_user(user)
+
+            data = {}
+
+            data['username'] = user.username
+            data['email']    = user.email
+            data['token']    = {
+                                    'refresh': str(refresh),
+                                    'access' : str(refresh.access_token)
+                                }
+            return Response(data, status=201)
+        return Response(serializer.errors, status=400)
