@@ -19,15 +19,14 @@ class RegistrationSerailzer(serializers.ModelSerializer):
         email          = self.validated_data['email']
         password       = self.validated_data['password']
         password_check = self.validated_data['password_check']
-        
 
         if password != password_check:
             raise serializers.ValidationError('both password should be same')
         if User.objects.filter(email=email).exists():
             raise serializers.ValidationError('email already exists')
         
-        account = User.objects.create(username=username, email=email)
-        account.set_password(password)
-        account.save()
+        user = User.objects.create(username=username, email=email)
+        user.set_password(password)
+        user.save()
 
-        return account
+        return user
