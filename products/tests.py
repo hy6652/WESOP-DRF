@@ -37,14 +37,14 @@ class ProductTestCase(APITestCase):
         self.ingredient = Ingredient.objects.create(name='test ingredient')
 
         self.product = Product.objects.create(
-            name        = 'test name',
-            price       = 1000.00,
-            size        = 'test size',
-            description = 'test description',
-            category    = self.category,
-            howtouse    = {'test':'test'},
-            badge       = 'test badge'
-        )
+                                    name        = 'test name',
+                                    price       = 1000.00,
+                                    size        = 'test size',
+                                    description = 'test description',
+                                    category    = self.category,
+                                    howtouse    = {'test':'test'},
+                                    badge       = 'test badge'
+                                )
 
     def test_product_list_get(self):
         response = self.client.get(reverse('product-list'))
