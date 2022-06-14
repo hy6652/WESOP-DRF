@@ -61,6 +61,10 @@ class ReviewTestCase(APITestCase):
         refresh   = RefreshToken.for_user(self.user)
         self.client.credentials(HTTP_AUTHORIZATION='Bearer {0}'.format(refresh.access_token))
 
+        self.user_two = User.objects.create_user(username='example2', password='Password123!')
+        refresh_two   = RefreshToken.for_user(self.user_two)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer {0}'.format(refresh_two.access_token))
+
         self.category = Category.objects.create(
                                     category_name    = 'test category',
                                     main_description = 'test main description',
@@ -94,3 +98,12 @@ class ReviewTestCase(APITestCase):
     def test_review_detail_get(self):
         response = self.client.get(reverse('review-detail', args=(self.review.id, )))
         self.assertEqual(response.status_code, 200)
+    
+    def test_review_create(self):
+        data = {
+            "user"   : self.user_two,
+            "product": self.product,
+            "content": "test content"
+        }
+        response = self.client.post(reverse('review-create', args=(self.product.id, )), data)
+        self.assertEqual(response.status_code, 201)
