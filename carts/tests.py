@@ -5,7 +5,7 @@ from rest_framework.test             import APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from carts.models    import Cart
-from products.models import *
+from products.models import Category, Product, Feeling, SkinType, Ingredient
 
 
 class CartTest(APITestCase):

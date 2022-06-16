@@ -1,20 +1,12 @@
-import json
 from django.forms import ValidationError
 
 from rest_framework             import generics
 from rest_framework             import filters
-from rest_framework.response    import Response
 from rest_framework.permissions import IsAuthenticated
 
-from django.http      import JsonResponse
-from django.views     import View
-from django.http      import JsonResponse
-# from django.db.models import Q
-
-from cores.utils          import author
-from products.pagination  import CategoryLimitOffsetPagination
+from products.pagination  import CategoryLimitOffsetPagination, ProductLimitOffsetPagination
 from products.serializers import ProductSerializer, CategorySerializer, ReviewSerializer
-from products.models      import Category, Product, Ingredient, SkinType, ProductFeelings, Review
+from products.models      import Category, Product, Review
 
 
 class ProductListGV(generics.ListAPIView):
@@ -22,6 +14,7 @@ class ProductListGV(generics.ListAPIView):
     serializer_class = ProductSerializer
     filter_backends  = [filters.SearchFilter]
     search_fields    = ['^name', '=category__id', '^skin_type__name', 'feeling__name', '^ingredient__name']
+    pagination_class = ProductLimitOffsetPagination
 
 
 class ProductDetailGV(generics.RetrieveAPIView):
